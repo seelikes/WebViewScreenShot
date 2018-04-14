@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WebViewScreenShot</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
@@ -6,4 +7,13 @@
     <string name="nav_header_subtitle">android.studio@android.com</string>
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
+
+    <string name="content_main_url_label">url:</string>
+    <string name="content_main_url_edit_default">https://www.baidu.com/</string>
+    <string name="content_main_width_label">width:</string>
+    <string name="content_main_preview_label">Preview:</string>
+    <string name="content_main_preview_button">Generate</string>
+
+    <string name="activity_main_error_url_empty">Url can not be empty!!</string>
+    <string name="activity_main_error_width_format">Width can only be int value!!</string>
 </resources>

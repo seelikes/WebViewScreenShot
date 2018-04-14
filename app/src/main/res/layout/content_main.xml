@@ -8,13 +8,99 @@
     tools:context=".MainActivity"
     tools:showIn="@layout/app_bar_main">
 
-    <WebView
-        android:id="@+id/content_main_web_view"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:id="@+id/content_main_url_linear"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/content_main_url_label"
+            android:layout_width="@dimen/content_main_label_width"
+            android:layout_height="wrap_content"
+            android:gravity="end|center_vertical"
+            android:text="@string/content_main_url_label" />
+
+        <EditText
+            android:id="@+id/content_main_url_edit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="@integer/content_main_edit_width_weight"
+            android:gravity="start|center_vertical"
+            android:inputType="textUri" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/content_main_width_linear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/content_main_url_linear"
+        app:layout_constraintStart_toStartOf="@id/content_main_url_linear"
+        app:layout_constraintEnd_toEndOf="@id/content_main_url_linear"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/content_main_width_label"
+            android:layout_width="@dimen/content_main_label_width"
+            android:layout_height="wrap_content"
+            android:gravity="end|center_vertical"
+            android:text="@string/content_main_width_label" />
+
+        <EditText
+            android:id="@+id/content_main_width_edit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="@integer/content_main_edit_width_weight"
+            android:gravity="start|center_vertical"
+            android:inputType="number" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/content_main_preview_linear"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/content_main_width_linear"
+        app:layout_constraintStart_toStartOf="@id/content_main_width_linear"
+        app:layout_constraintEnd_toEndOf="@id/content_main_width_linear"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/content_main_preview_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start|center_vertical"
+            android:text="@string/content_main_preview_label" />
+
+        <Button
+            android:id="@+id/content_main_preview_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center_vertical"
+            android:text="@string/content_main_preview_button"
+            android:onClick="onPreviewClick" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/content_main_preview_scroll"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:layout_constraintTop_toBottomOf="@id/content_main_preview_linear"
+        app:layout_constraintStart_toStartOf="@id/content_main_preview_linear"
+        app:layout_constraintEnd_toEndOf="@id/content_main_preview_linear">
+
+        <com.github.chrisbanes.photoview.PhotoView
+            android:id="@+id/content_main_preview_image"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:contentDescription="@null" />
+
+    </ScrollView>
 
 </android.support.constraint.ConstraintLayout>

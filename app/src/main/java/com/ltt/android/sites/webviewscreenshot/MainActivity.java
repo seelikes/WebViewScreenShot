@@ -1,6 +1,7 @@
 package com.ltt.android.sites.webviewscreenshot;
 
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.NavigationView;
@@ -10,22 +11,29 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.webkit.WebView;
+import android.widget.EditText;
+import android.widget.Toast;
 
-import com.java.lib.oil.file.FileUtils;
+import com.github.chrisbanes.photoview.PhotoView;
+import com.java.lib.oil.lang.StringManager;
 import com.ltt.android.lib.url2bitmap.Url2Bitmap;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import rx.Observable;
+import rx.android.schedulers.AndroidSchedulers;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+    @BindView(R.id.content_main_url_edit)
+    protected EditText urlEdit;
 
-    @BindView(R.id.content_main_web_view)
-    protected WebView webView;
+    @BindView(R.id.content_main_width_edit)
+    protected EditText widthEdit;
+
+    @BindView(R.id.content_main_preview_image)
+    protected PhotoView previewImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,14 +49,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         ButterKnife.bind(this);
 
-        webView.loadUrl("http://www.bvbcode.com/cn/36t8vp19-2710044");
-
-        new Thread(() -> {
-            Log.i(MainActivity.class.getSimpleName(), "onCreate.UL5555LP.DI1211, getBitmap call next line");
-            Bitmap bitmap = Url2Bitmap.getBitmap(this, "https://zhidao.baidu.com/question/1823614687845736468.html?fr=iks&word=FutureTask&ie=gbk", 384);
-            Log.i(MainActivity.class.getSimpleName(), "onCreate.UL5555LP.DI1211, bitmap != null: " + (bitmap != null));
-            saveBitmap(bitmap, "Url2Bitmap");
-        }).start();
+        urlEdit.setText(R.string.content_main_url_edit_default);
+        Point size = new Point();
+        getWindowManager().getDefaultDisplay().getSize(size);
+        widthEdit.setText(String.valueOf(size.x));
     }
 
     @Override
@@ -114,18 +118,25 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-    /**
-     * 保存图片到文件
-     * @param bitmap 需要保存的图片对象
-     * @param name 目标文件名称
-     */
-    private void saveBitmap(Bitmap bitmap, String name) {
-        File screenshot = FileUtils.getInstance().locateFile(getExternalCacheDir(), "screenshot", name + "_" + System.currentTimeMillis() + ".png");
-        try {
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, new FileOutputStream(screenshot));
+    public void onPreviewClick(View view) {
+        String url = urlEdit.getText().toString();
+        if (StringManager.getInstance().isEmpty(url)) {
+            Toast.makeText(this, R.string.activity_main_error_url_empty, Toast.LENGTH_LONG).show();
+            return;
         }
-        catch (FileNotFoundException e) {
-            e.printStackTrace();
+
+        if (!widthEdit.getText().toString().matches("\\d+")) {
+            Toast.makeText(this, R.string.activity_main_error_width_format, Toast.LENGTH_LONG).show();
+            return;
         }
+
+        new Thread(() -> {
+            Log.i(MainActivity.class.getSimpleName(), "onPreviewClick.UL5555LP.DI1211, getBitmap call next line");
+            Bitmap bitmap = Url2Bitmap.getBitmap(this, url, Integer.parseInt(widthEdit.getText().toString()));
+            Log.i(MainActivity.class.getSimpleName(), "onPreviewClick.UL5555LP.DI1211, bitmap != null: " + (bitmap != null));
+            Observable.just(bitmap)
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(image -> previewImage.setImageBitmap(bitmap));
+        }).start();
     }
 }
