@@ -90,10 +90,12 @@
     <ScrollView
         android:id="@+id/content_main_preview_scroll"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        app:layout_constraintVertical_weight="@integer/content_main_preview_scroll_height_weight"
         app:layout_constraintTop_toBottomOf="@id/content_main_preview_linear"
         app:layout_constraintStart_toStartOf="@id/content_main_preview_linear"
-        app:layout_constraintEnd_toEndOf="@id/content_main_preview_linear">
+        app:layout_constraintEnd_toEndOf="@id/content_main_preview_linear"
+        app:layout_constraintBottom_toBottomOf="parent">
 
         <com.github.chrisbanes.photoview.PhotoView
             android:id="@+id/content_main_preview_image"

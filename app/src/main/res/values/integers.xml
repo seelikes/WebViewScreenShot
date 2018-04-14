@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <integer name="content_main_edit_width_weight">1</integer>
+    <integer name="content_main_preview_scroll_height_weight">1</integer>
 </resources>
