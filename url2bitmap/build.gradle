@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven-publish'
 
 android {
     compileSdkVersion 27
@@ -7,8 +8,8 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 1
-        versionName "1.0"
+        versionCode 100
+        versionName "1.0.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -34,4 +35,51 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.1'
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
+}
+
+task androidJavadocs(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    options.linkSource true
+    options.encoding "UTF-8"
+    classpath += files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task androidJavadocsJar(type: Jar, dependsOn: androidJavadocs) {
+    classifier = "javadoc"
+    from androidJavadocs.destinationDir
+}
+
+task androidSourcesJar(type: Jar) {
+    classifier = "sources"
+    from android.sourceSets.main.java.sourceFiles
+}
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            groupId "com.ltt.android.lib"
+            artifactId "url2bitmap"
+            version "1.0.0"
+            artifact androidJavadocsJar
+            artifact androidSourcesJar
+            artifact bundleRelease
+            pom.withXml {
+                def dependencies = asNode().appendNode('dependencies')
+                wrapIntoDependencies(dependencies, configurations.api, "compile")
+                wrapIntoDependencies(dependencies, configurations.implementation, "provided")
+                wrapIntoDependencies(dependencies, configurations.compileOnly, "runtime")
+                wrapIntoDependencies(dependencies, configurations.testImplementation, "test")
+                wrapIntoDependencies(dependencies, configurations.androidTestImplementation, "test")
+            }
+        }
+    }
+    repositories {
+        maven {
+            url project.property('deploy.release.url')
+            credentials {
+                username project.property("deploy.release.user.name")
+                password project.property("deploy.release.user.password")
+            }
+        }
+    }
 }
