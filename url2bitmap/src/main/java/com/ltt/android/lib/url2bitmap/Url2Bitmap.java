@@ -9,6 +9,7 @@ import android.graphics.PaintFlagsDrawFilter;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
+import android.support.annotation.NonNull;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -198,7 +199,7 @@ public class Url2Bitmap {
          * @param context 应用上下文
          * @return {@link Builder} 实例自身
          */
-        public Builder context(Context context) {
+        public Builder context(@NonNull Context context) {
             bitmap.setContext(context);
             return this;
         }
