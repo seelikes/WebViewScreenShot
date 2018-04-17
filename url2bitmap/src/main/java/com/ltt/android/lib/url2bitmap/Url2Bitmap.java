@@ -1,5 +1,6 @@
 package com.ltt.android.lib.url2bitmap;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -8,15 +9,16 @@ import android.graphics.PaintFlagsDrawFilter;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Message;
-import android.support.annotation.NonNull;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import com.java.lib.oil.KVPair;
 import com.ltt.android.lib.url2bitmap.callable.BitmapCallable;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 
@@ -27,22 +29,92 @@ public class Url2Bitmap {
     private static final int WHAT_TRY_TO_CAPTURE = 10;
 
     /**
+     * 应用上下文
+     */
+    private Context context;
+
+    /**
+     * 网页地址
+     * assets目录请加前缀file:///android_asset/
+     */
+    private String url;
+
+    /**
+     * 目标图片宽度
+     */
+    private int width;
+
+    /**
+     * 生成图片的等待超时时间
+     */
+    private long timeout;
+
+    /**
+     * 注入到WebView组件中的JavaScriptInterface对象
+     */
+    private List<KVPair<String, Object>> interfaces;
+
+    /**
+     * 推荐使用Builder做为入口
+     * @return {@link Builder}
+     */
+    public static Builder Builder() {
+        return new Builder();
+    }
+
+    public Context getContext() {
+        return context;
+    }
+
+    public void setContext(Context context) {
+        this.context = context;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public void setTimeout(long timeout) {
+        this.timeout = timeout;
+    }
+
+    public List<KVPair<String, Object>> getInterfaces() {
+        return interfaces;
+    }
+
+    public void setInterfaces(List<KVPair<String, Object>> interfaces) {
+        this.interfaces = interfaces;
+    }
+
+    /**
      * 获取指定地址的图片
      * 此方法会阻塞当前线程，请不要在主线程中执行此方法
-     * @param context 应用上下文
-     * @param url 网页地址
-     * @param width 目标图片宽度
      * @return 指定网页的图片
      */
-    public static Bitmap getBitmap(@NonNull Context context, String url, int width) {
-        Log.i(Url2Bitmap.class.getSimpleName(), "getBitmap.UL5555LP.DI1211, url: " + url);
-        Log.i(Url2Bitmap.class.getSimpleName(), "getBitmap.UL5555LP.DI1211, width: " + width);
+    private Bitmap getBitmap() {
         BitmapCallable callable = new BitmapCallable();
         FutureTask<Bitmap> task = new FutureTask<>(callable);
         new Thread(task).start();
 
         Handler mainHandler = new Handler(context.getMainLooper());
         mainHandler.post(new Runnable() {
+            @SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
             @Override
             public void run() {
                 WebView view = new WebView(context);
@@ -52,17 +124,27 @@ public class Url2Bitmap {
                 view.getSettings().setBuiltInZoomControls(false);
                 view.getSettings().setSupportZoom(false);
 
+                if (interfaces != null) {
+                    for (KVPair<String, Object> with: interfaces) {
+                        view.addJavascriptInterface(with.getValue(), with.getKey());
+                    }
+                }
+
                 HandlerThread shotThread = new HandlerThread("Url2Bitmap.shotThread");
                 shotThread.start();
+                long startTime = System.currentTimeMillis();
                 Handler shotHandler = new Handler(shotThread.getLooper()) {
                     @Override
                     public void handleMessage(Message msg) {
                         if (msg.what == WHAT_TRY_TO_CAPTURE) {
                             view.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
                             view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
-                            Log.i(Url2Bitmap.class.getSimpleName(), "getBitmap.onPageFinished.UL5555LP.DI1211, view.getMeasuredWidth(): " + view.getMeasuredWidth() + "; view.getMeasuredHeight(): " + view.getMeasuredHeight());
 
                             if (view.getMeasuredHeight() <= 0) {
+                                if (timeout > 0 && System.currentTimeMillis() - startTime > timeout) {
+                                    callable.setBitmap(null);
+                                    return;
+                                }
                                 sendEmptyMessageDelayed(WHAT_TRY_TO_CAPTURE, 30);
                                 return;
                             }
@@ -79,7 +161,6 @@ public class Url2Bitmap {
                 view.setWebViewClient(new WebViewClient() {
                     @Override
                     public void onPageFinished(WebView view, String url) {
-                        Log.i(Url2Bitmap.class.getSimpleName(), "getBitmap.onPageFinished.UL5555LP.DI1211, enter");
                         super.onPageFinished(view, url);
 
                         shotHandler.sendEmptyMessageDelayed(WHAT_TRY_TO_CAPTURE, 30);
@@ -89,7 +170,6 @@ public class Url2Bitmap {
                 view.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY));
                 view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
 
-                Log.i(Url2Bitmap.class.getSimpleName(), "getBitmap.UL5555LP.DI1211, new WebView load.");
                 view.loadUrl(url);
             }
         });
@@ -103,5 +183,82 @@ public class Url2Bitmap {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public static class Builder {
+        private Url2Bitmap bitmap;
+
+        private Builder() {
+            bitmap = new Url2Bitmap();
+        }
+
+        /**
+         * 设定应用上下文
+         * 强引用保存，至到get方法返回
+         * @param context 应用上下文
+         * @return {@link Builder} 实例自身
+         */
+        public Builder context(Context context) {
+            bitmap.setContext(context);
+            return this;
+        }
+
+        /**
+         * 设定网页地址
+         * assets目录下需加file:///android_asset/前缀
+         * @param url 目标网页地址
+         * @return {@link Builder} 实例自身
+         */
+        public Builder url(String url) {
+            bitmap.setUrl(url);
+            return this;
+        }
+
+        /**
+         * 设定目标图片宽度
+         * 宽度的单位是逻辑单位，但是通常等同于物理尺寸像素
+         * @param width 目标图片宽度
+         * @return {@link Builder} 实例自身
+         */
+        public Builder width(int width) {
+            bitmap.setWidth(width);
+            return this;
+        }
+
+        /**
+         * 设定超时时间
+         * 单位ms
+         * 大于0才起效
+         * 其他值，则 {@link #get()} 方法将阻塞至到获取到图片
+         * @param timeout 超时时间
+         * @return {@link Builder} 实例自身
+         */
+        public Builder timeout(long timeout) {
+            bitmap.setTimeout(timeout);
+            return this;
+        }
+
+        /**
+         * 注入Javascript接口
+         * @param name 名字
+         * @param javascript 接口对象
+         * @return Builder实例自身
+         */
+        public Builder with(String name, Object javascript) {
+            if (bitmap.getInterfaces() == null) {
+                bitmap.setInterfaces(new ArrayList<>());
+            }
+            bitmap.getInterfaces().add(new KVPair<>(name, javascript));
+            return this;
+        }
+
+        /**
+         * 获取图片对象
+         * 此方法会阻塞当前线程，请不要在主线程中执行此方法
+         * @return 指定网页的图片
+         */
+        public Bitmap get() {
+            return bitmap.getBitmap();
+        }
     }
 }

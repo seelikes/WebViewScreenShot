@@ -163,7 +163,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         new Thread(() -> {
             Log.i(MainActivity.class.getSimpleName(), "onPreviewClick.UL5555LP.DI1211, getBitmap call next line");
-            Bitmap bitmap = Url2Bitmap.getBitmap(this, url, Integer.parseInt(widthEdit.getText().toString()));
+            Bitmap bitmap = Url2Bitmap.Builder().context(this).url(url).width(Integer.parseInt(widthEdit.getText().toString())).get();
             Log.i(MainActivity.class.getSimpleName(), "onPreviewClick.UL5555LP.DI1211, bitmap != null: " + (bitmap != null));
             Observable.just(bitmap)
                 .observeOn(AndroidSchedulers.mainThread())
