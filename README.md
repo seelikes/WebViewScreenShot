@@ -8,7 +8,7 @@ capture WebView whole content to bitmap
         }
 * add it to your dependencies
 
-        implementation "com.ltt.android.lib:url2bitmap:1.0.1"
+        implementation "com.ltt.android.lib:url2bitmap:1.0.2"
 
 ## sample
 make sure that the Url2Bitmap.getBitmap method is called from a thread other than the main thread

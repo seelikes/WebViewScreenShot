@@ -24,6 +24,7 @@ import android.widget.Toast;
 import com.github.chrisbanes.photoview.PhotoView;
 import com.java.lib.oil.lang.StringManager;
 import com.ltt.android.lib.url2bitmap.Url2Bitmap;
+import com.ltt.android.sites.webviewscreenshot.with.MainEntity;
 import com.yanzhenjie.permission.AndPermission;
 
 import butterknife.BindView;
@@ -163,7 +164,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
         new Thread(() -> {
             Log.i(MainActivity.class.getSimpleName(), "onPreviewClick.UL5555LP.DI1211, getBitmap call next line");
-            Bitmap bitmap = Url2Bitmap.Builder().context(this).url(url).width(Integer.parseInt(widthEdit.getText().toString())).get();
+            Bitmap bitmap = Url2Bitmap.Builder().context(this).url(url).with("main", new MainEntity(this)).width(Integer.parseInt(widthEdit.getText().toString())).get();
             Log.i(MainActivity.class.getSimpleName(), "onPreviewClick.UL5555LP.DI1211, bitmap != null: " + (bitmap != null));
             Observable.just(bitmap)
                 .observeOn(AndroidSchedulers.mainThread())

@@ -9,7 +9,7 @@
     <string name="action_settings">Settings</string>
 
     <string name="content_main_url_label">url:</string>
-    <string name="content_main_url_edit_default">https://www.baidu.com/</string>
+    <string name="content_main_url_edit_default">file:///android_asset/demo/demo.html</string>
     <string name="content_main_width_label">width:</string>
     <string name="content_main_preview_label">Preview:</string>
     <string name="content_main_preview_button">Generate</string>

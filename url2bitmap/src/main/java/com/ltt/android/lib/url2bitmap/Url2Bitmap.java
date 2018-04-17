@@ -41,6 +41,12 @@ public class Url2Bitmap {
     private String url;
 
     /**
+     * 启动Js
+     * 默认启动Js
+     */
+    private boolean enableJs;
+
+    /**
      * 目标图片宽度
      */
     private int width;
@@ -63,6 +69,14 @@ public class Url2Bitmap {
         return new Builder();
     }
 
+    /**
+     * 请使用 {@link #Builder()}
+     */
+    @Deprecated
+    public Url2Bitmap() {
+        enableJs = true;
+    }
+
     public Context getContext() {
         return context;
     }
@@ -77,6 +91,14 @@ public class Url2Bitmap {
 
     public void setUrl(String url) {
         this.url = url;
+    }
+
+    public boolean isEnableJs() {
+        return enableJs;
+    }
+
+    public void setEnableJs(boolean enableJs) {
+        this.enableJs = enableJs;
     }
 
     public int getWidth() {
@@ -124,6 +146,8 @@ public class Url2Bitmap {
                 view.setVerticalScrollBarEnabled(false);
                 view.getSettings().setBuiltInZoomControls(false);
                 view.getSettings().setSupportZoom(false);
+
+                view.getSettings().setJavaScriptEnabled(enableJs);
 
                 if (interfaces != null) {
                     for (KVPair<String, Object> with: interfaces) {
@@ -216,6 +240,16 @@ public class Url2Bitmap {
         }
 
         /**
+         * 设定是否启动Js
+         * @param enableJs true 启动，false 禁止，默认 true
+         * @return {@link Builder} 实例自身
+         */
+        public Builder enableJs(boolean enableJs) {
+            bitmap.setEnableJs(enableJs);
+            return this;
+        }
+
+        /**
          * 设定目标图片宽度
          * 宽度的单位是逻辑单位，但是通常等同于物理尺寸像素
          * @param width 目标图片宽度
@@ -243,7 +277,7 @@ public class Url2Bitmap {
          * 注入Javascript接口
          * @param name 名字
          * @param javascript 接口对象
-         * @return Builder实例自身
+         * @return {@link Builder} 实例自身
          */
         public Builder with(String name, Object javascript) {
             if (bitmap.getInterfaces() == null) {
