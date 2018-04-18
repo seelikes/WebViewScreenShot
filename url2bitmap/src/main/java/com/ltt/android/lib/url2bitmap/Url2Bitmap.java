@@ -7,7 +7,7 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.PaintFlagsDrawFilter;
 import android.os.Handler;
-import android.os.HandlerThread;
+import android.os.Looper;
 import android.os.Message;
 import android.support.annotation.NonNull;
 import android.view.View;
@@ -172,10 +172,8 @@ public class Url2Bitmap {
                     }
                 }
 
-                HandlerThread shotThread = new HandlerThread("Url2Bitmap.shotThread");
-                shotThread.start();
                 long startTime = System.currentTimeMillis();
-                Handler shotHandler = new Handler(shotThread.getLooper()) {
+                Handler shotHandler = new Handler(Looper.getMainLooper()) {
                     @Override
                     public void handleMessage(Message msg) {
                         if (msg.what == WHAT_TRY_TO_CAPTURE) {
