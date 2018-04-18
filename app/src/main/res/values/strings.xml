@@ -13,7 +13,13 @@
     <string name="content_main_width_label">width:</string>
     <string name="content_main_preview_label">Preview:</string>
     <string name="content_main_preview_button">Generate</string>
+    <string name="content_main_capture_web_view">Capture On WebView</string>
 
     <string name="activity_main_error_url_empty">Url can not be empty!!</string>
     <string name="activity_main_error_width_format">Width can only be int value!!</string>
+
+    <string name="activity_capture_web_view">Capture To File</string>
+    <string name="activity_capture_web_view_url_default">file:///android_asset/demo/demo.html</string>
+    <string name="activity_capture_web_view_url_hint">Enter url here.</string>
+    <string name="activity_capture_web_view_screenshot_success">Success: %s</string>
 </resources>

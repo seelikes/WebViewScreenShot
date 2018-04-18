@@ -1,6 +1,7 @@
 package com.ltt.android.sites.webviewscreenshot;
 
 import android.Manifest;
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.os.Build;
@@ -170,5 +171,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(image -> previewImage.setImageBitmap(bitmap));
         }).start();
+    }
+
+    public void onCaptureView(View view) {
+        Intent intent = new Intent(this, CaptureWebViewActivity.class);
+        startActivity(intent);
     }
 }

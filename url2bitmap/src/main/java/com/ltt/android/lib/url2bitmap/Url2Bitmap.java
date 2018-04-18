@@ -37,6 +37,11 @@ public class Url2Bitmap {
     private static final int WHAT_CHECK_PROGRESS = 11;
 
     /**
+     * 清除view修改
+     */
+    private static final int WHAT_ERASE_CHANGE_ON_VIEW = 12;
+
+    /**
      * 应用上下文
      */
     private Context context;
@@ -156,14 +161,14 @@ public class Url2Bitmap {
         FutureTask<Bitmap> task = new FutureTask<>(callable);
         new Thread(task).start();
 
-        boolean hasView = view != null;
-        boolean bakEnableJs = hasView && view.getSettings().getJavaScriptEnabled();
-
         Handler mainHandler = new Handler(context.getMainLooper());
         mainHandler.post(new Runnable() {
             @SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
             @Override
             public void run() {
+                boolean hasView = view != null;
+                boolean bakEnableJs = hasView && view.getSettings().getJavaScriptEnabled();
+
                 if (view == null) {
                     view = new WebView(context);
                     view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
@@ -185,7 +190,17 @@ public class Url2Bitmap {
                 Handler shotHandler = new Handler(Looper.getMainLooper()) {
                     @Override
                     public void handleMessage(Message msg) {
-                        if (msg.what == WHAT_CHECK_PROGRESS) {
+                        if (msg.what == WHAT_ERASE_CHANGE_ON_VIEW) {
+                            if (hasView) {
+                                view.getSettings().setJavaScriptEnabled(bakEnableJs);
+                                if (interfaces != null) {
+                                    for (KVPair<String, Object> with: interfaces) {
+                                        view.removeJavascriptInterface(with.getKey());
+                                    }
+                                }
+                            }
+                        }
+                        else if (msg.what == WHAT_CHECK_PROGRESS) {
                             if (view.getProgress() < 100) {
                                 sendEmptyMessageDelayed(WHAT_CHECK_PROGRESS, 30);
                                 return;
@@ -200,6 +215,7 @@ public class Url2Bitmap {
 
                             if (view.getMeasuredHeight() <= 0) {
                                 if (timeout > 0 && System.currentTimeMillis() - startTime > timeout) {
+                                    sendEmptyMessage(WHAT_ERASE_CHANGE_ON_VIEW);
                                     callable.setBitmap(null);
                                     return;
                                 }
@@ -211,6 +227,8 @@ public class Url2Bitmap {
                             Canvas canvas = new Canvas(bitmap);
                             canvas.setDrawFilter(new PaintFlagsDrawFilter(Paint.ANTI_ALIAS_FLAG, 0));
                             view.draw(canvas);
+
+                            sendEmptyMessage(WHAT_ERASE_CHANGE_ON_VIEW);
 
                             callable.setBitmap(bitmap);
                         }
@@ -249,16 +267,6 @@ public class Url2Bitmap {
         catch (ExecutionException e) {
             e.printStackTrace();
         }
-        finally {
-            if (hasView) {
-                view.getSettings().setJavaScriptEnabled(bakEnableJs);
-                if (interfaces != null) {
-                    for (KVPair<String, Object> with: interfaces) {
-                        view.removeJavascriptInterface(with.getKey());
-                    }
-                }
-            }
-        }
         return null;
     }
 
@@ -282,7 +290,7 @@ public class Url2Bitmap {
 
         /**
          * 设定用于绘制网页WebView
-         * 这不是必须的，也是不推荐的，甚至是没有测试保证效果的
+         * 这不是必须的，也是不推荐的
          * @param view 用于绘制网页WebView
          * @return {@link Builder} 实例自身
          */
