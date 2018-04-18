@@ -36,6 +36,12 @@ public class Url2Bitmap {
     private Context context;
 
     /**
+     * 用于绘制网页的WebView
+     * 这不是必须的，也是不推荐的
+     */
+    private WebView view;
+
+    /**
      * 网页地址
      * assets目录请加前缀file:///android_asset/
      */
@@ -84,6 +90,14 @@ public class Url2Bitmap {
 
     public void setContext(Context context) {
         this.context = context;
+    }
+
+    public WebView getView() {
+        return view;
+    }
+
+    public void setView(WebView view) {
+        this.view = view;
     }
 
     public String getUrl() {
@@ -141,12 +155,14 @@ public class Url2Bitmap {
             @SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
             @Override
             public void run() {
-                WebView view = new WebView(context);
-                view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-                view.setInitialScale(100);
-                view.setVerticalScrollBarEnabled(false);
-                view.getSettings().setBuiltInZoomControls(false);
-                view.getSettings().setSupportZoom(false);
+                if (view == null) {
+                    view = new WebView(context);
+                    view.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+                    view.setInitialScale(100);
+                    view.setVerticalScrollBarEnabled(false);
+                    view.getSettings().setBuiltInZoomControls(false);
+                    view.getSettings().setSupportZoom(false);
+                }
 
                 view.getSettings().setJavaScriptEnabled(enableJs);
 
@@ -229,6 +245,17 @@ public class Url2Bitmap {
          */
         public Builder context(@NonNull Context context) {
             bitmap.setContext(context);
+            return this;
+        }
+
+        /**
+         * 设定用于绘制网页WebView
+         * 这不是必须的，也是不推荐的，甚至是没有测试保证效果的
+         * @param view 用于绘制网页WebView
+         * @return {@link Builder} 实例自身
+         */
+        public Builder view(WebView view) {
+            bitmap.setView(view);
             return this;
         }
 
