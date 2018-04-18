@@ -16,6 +16,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import com.java.lib.oil.KVPair;
+import com.java.lib.oil.lang.StringManager;
 import com.ltt.android.lib.url2bitmap.callable.BitmapCallable;
 
 import java.util.ArrayList;
@@ -195,6 +196,9 @@ public class Url2Bitmap {
                 view.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY));
                 view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
 
+                if (StringManager.getInstance().isEmpty(url)) {
+                    return;
+                }
                 view.loadUrl(url);
             }
         });
