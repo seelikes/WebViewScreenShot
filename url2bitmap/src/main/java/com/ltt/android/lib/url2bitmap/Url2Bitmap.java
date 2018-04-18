@@ -31,6 +31,12 @@ public class Url2Bitmap {
     private static final int WHAT_TRY_TO_CAPTURE = 10;
 
     /**
+     * 检查加载进度
+     * 该消息只对提供WebView有效
+     */
+    private static final int WHAT_CHECK_PROGRESS = 11;
+
+    /**
      * 应用上下文
      */
     private Context context;
@@ -150,6 +156,9 @@ public class Url2Bitmap {
         FutureTask<Bitmap> task = new FutureTask<>(callable);
         new Thread(task).start();
 
+        boolean hasView = view != null;
+        boolean bakEnableJs = hasView && view.getSettings().getJavaScriptEnabled();
+
         Handler mainHandler = new Handler(context.getMainLooper());
         mainHandler.post(new Runnable() {
             @SuppressLint({"JavascriptInterface", "AddJavascriptInterface"})
@@ -176,9 +185,18 @@ public class Url2Bitmap {
                 Handler shotHandler = new Handler(Looper.getMainLooper()) {
                     @Override
                     public void handleMessage(Message msg) {
-                        if (msg.what == WHAT_TRY_TO_CAPTURE) {
-                            view.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
-                            view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+                        if (msg.what == WHAT_CHECK_PROGRESS) {
+                            if (view.getProgress() < 100) {
+                                sendEmptyMessageDelayed(WHAT_CHECK_PROGRESS, 30);
+                                return;
+                            }
+                            sendEmptyMessageDelayed(WHAT_TRY_TO_CAPTURE, 30);
+                        }
+                        else if (msg.what == WHAT_TRY_TO_CAPTURE) {
+                            if (!hasView) {
+                                view.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+                                view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+                            }
 
                             if (view.getMeasuredHeight() <= 0) {
                                 if (timeout > 0 && System.currentTimeMillis() - startTime > timeout) {
@@ -198,17 +216,23 @@ public class Url2Bitmap {
                         }
                     }
                 };
-                view.setWebViewClient(new WebViewClient() {
-                    @Override
-                    public void onPageFinished(WebView view, String url) {
-                        super.onPageFinished(view, url);
 
-                        shotHandler.sendEmptyMessageDelayed(WHAT_TRY_TO_CAPTURE, 30);
-                    }
-                });
+                if (!hasView) {
+                    view.setWebViewClient(new WebViewClient() {
+                        @Override
+                        public void onPageFinished(WebView view, String url) {
+                            super.onPageFinished(view, url);
 
-                view.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY));
-                view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+                            shotHandler.sendEmptyMessageDelayed(WHAT_TRY_TO_CAPTURE, 30);
+                        }
+                    });
+
+                    view.measure(View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(100, View.MeasureSpec.EXACTLY));
+                    view.layout(0, 0, view.getMeasuredWidth(), view.getMeasuredHeight());
+                }
+                else {
+                    shotHandler.sendEmptyMessage(WHAT_CHECK_PROGRESS);
+                }
 
                 if (StringManager.getInstance().isEmpty(url)) {
                     return;
@@ -224,6 +248,16 @@ public class Url2Bitmap {
         }
         catch (ExecutionException e) {
             e.printStackTrace();
+        }
+        finally {
+            if (hasView) {
+                view.getSettings().setJavaScriptEnabled(bakEnableJs);
+                if (interfaces != null) {
+                    for (KVPair<String, Object> with: interfaces) {
+                        view.removeJavascriptInterface(with.getKey());
+                    }
+                }
+            }
         }
         return null;
     }
