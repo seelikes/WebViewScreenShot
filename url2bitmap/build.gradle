@@ -8,8 +8,8 @@ android {
     defaultConfig {
         minSdkVersion 15
         targetSdkVersion 27
-        versionCode 102
-        versionName "1.0.2"
+        versionCode 103
+        versionName "1.0.3"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -60,7 +60,7 @@ publishing {
         maven(MavenPublication) {
             groupId "com.ltt.android.lib"
             artifactId "url2bitmap"
-            version "1.0.2"
+            version "1.0.3"
             artifact androidJavadocsJar
             artifact androidSourcesJar
             artifact bundleRelease
